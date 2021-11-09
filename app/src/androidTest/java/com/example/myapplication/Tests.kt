@@ -15,96 +15,62 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class Tests {
-    private val destinations = listOf(
-        R.id.fragment1,
-        R.id.fragment2,
-        R.id.fragment3,
-    )
 
     @get:Rule
     val rule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun testNavFragmentsJustByButtons() {
-        val buttonsToFragmentsToExistentDestinations = listOf(
-            R.id.bnToSecond to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
-            ),
-            R.id.bnToThird to R.id.fragment3 to listOf(
-                R.id.fragment1,
-                R.id.fragment2,
-                R.id.fragment3
-            ),
-            R.id.bnToSecond to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
-            ),
-            R.id.bnToFirst to R.id.fragment1 to listOf(
-                R.id.fragment1,
-            ),
-            R.id.bnToSecond to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
-            ),
-            R.id.bnToThird to R.id.fragment3 to listOf(
-                R.id.fragment1,
-                R.id.fragment2,
-                R.id.fragment3
-            ),
-            R.id.bnToFirst to R.id.fragment1 to listOf(
-                R.id.fragment1,
-            )
+    fun testNavFragmentsJustByButtons() = testNavFragments(listOf(
+        R.id.bnToSecond to R.id.fragment2 to listOf(
+            R.id.fragment1,
+            R.id.fragment2
+        ),
+        R.id.bnToThird to R.id.fragment3 to listOf(
+            R.id.fragment1,
+            R.id.fragment2,
+            R.id.fragment3
+        ),
+        R.id.bnToSecond to R.id.fragment2 to listOf(
+            R.id.fragment1,
+            R.id.fragment2
+        ),
+        R.id.bnToFirst to R.id.fragment1 to listOf(
+            R.id.fragment1,
+        ),
+        R.id.bnToSecond to R.id.fragment2 to listOf(
+            R.id.fragment1,
+            R.id.fragment2
+        ),
+        R.id.bnToThird to R.id.fragment3 to listOf(
+            R.id.fragment1,
+            R.id.fragment2,
+            R.id.fragment3
+        ),
+        R.id.bnToFirst to R.id.fragment1 to listOf(
+            R.id.fragment1,
         )
+    ))
 
-        buttonsToFragmentsToExistentDestinations.forEach { item ->
-            val bn = item.first.first
-            val frag = item.first.second
-
-            onView(withId(bn))
-                .perform(click())
-
-            onView(withId(frag))
-                .check(matches(isDisplayed()))
-
-            val existentDestinations = item.second
-            val notExistentDestinations = destinations - existentDestinations
-
-            notExistentDestinations.forEach { destination ->
-                onView(withId(destination))
-                    .check(doesNotExist())
-            }
-        }
+    @Test
+    fun testNavFragmentsWithPressBack() = testNavFragmentsWithBackNavigationNotByButtons {
+        pressBack()
     }
 
     @Test
-    fun testNavFragmentsWithPressBack() {
-        testNavFragmentsWithBackNavigationNotByButtons {
-            pressBack()
-        }
+    fun testNavFragmentsWithNavigateUp() = testNavFragmentsWithBackNavigationNotByButtons {
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
+            .perform(click())
     }
 
     @Test
-    fun testNavFragmentsWithNavigateUp() {
-        testNavFragmentsWithBackNavigationNotByButtons {
-            onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
-                .perform(click())
-        }
+    fun testNavToAndFromAboutWithPressBack() = testNavToAndFromAbout {
+        pressBack()
     }
 
     @Test
-    fun testNavToAndFromAboutWithPressBack() {
-        testNavToAndFromAbout {
-            pressBack()
-        }
-    }
-
-    @Test
-    fun testNavToAndFromAboutWithNavigateUp() {
-        testNavToAndFromAbout {
-            onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
-                .perform(click())
-        }
+    fun testNavToAndFromAboutWithNavigateUp() = testNavToAndFromAbout {
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
+            .perform(click())
     }
 
     @Test
@@ -164,31 +130,65 @@ class Tests {
             .check(matches(withText(R.string.title_to_second)))
     }
 
-    private fun testNavFragmentsWithBackNavigationNotByButtons(back: () -> Unit) {
-        val buttonsToFragmentsToExistentDestinations = listOf(
-            R.id.bnToSecond to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
+    private fun testNavFragmentsWithBackNavigationNotByButtons(back: () -> Unit) =
+        testNavFragments(
+            listOf(
+                R.id.bnToSecond to R.id.fragment2 to listOf(
+                    R.id.fragment1,
+                    R.id.fragment2
+                ),
+                null to R.id.fragment1 to listOf(
+                    R.id.fragment1,
+                ),
+                R.id.bnToSecond to R.id.fragment2 to listOf(
+                    R.id.fragment1,
+                    R.id.fragment2
+                ),
+                R.id.bnToThird to R.id.fragment3 to listOf(
+                    R.id.fragment1,
+                    R.id.fragment2,
+                    R.id.fragment3
+                ),
+                null to R.id.fragment2 to listOf(
+                    R.id.fragment1,
+                    R.id.fragment2
+                ),
+                null to R.id.fragment1 to listOf(
+                    R.id.fragment1
+                )
             ),
-            null to R.id.fragment1 to listOf(
-                R.id.fragment1,
-            ),
-            R.id.bnToSecond to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
-            ),
-            R.id.bnToThird to R.id.fragment3 to listOf(
-                R.id.fragment1,
-                R.id.fragment2,
-                R.id.fragment3
-            ),
-            null to R.id.fragment2 to listOf(
-                R.id.fragment1,
-                R.id.fragment2
-            ),
-            null to R.id.fragment1 to listOf(
-                R.id.fragment1
-            )
+            back
+        )
+
+    private fun testNavToAndFromAbout(back: () -> Unit) {
+        val fragments = mapOf(
+            R.id.fragment1 to R.id.bnToSecond,
+            R.id.fragment2 to R.id.bnToThird,
+            R.id.fragment3 to null
+        )
+
+        fragments.forEach { (frag, bn) ->
+            openAbout()
+            onView(withId(R.id.activity_about))
+                .check(matches(isDisplayed()))
+            back()
+            onView(withId(frag))
+                .check(matches(isDisplayed()))
+            bn?.let { bnNotNull ->
+                onView(withId(bnNotNull))
+                    .perform(click())
+            }
+        }
+    }
+
+    private fun testNavFragments(
+        buttonsToFragmentsToExistentDestinations: List<Pair<Pair<Int?, Int>, List<Int>>>,
+        back: () -> Unit = { }
+    ) {
+        val destinations = listOf(
+            R.id.fragment1,
+            R.id.fragment2,
+            R.id.fragment3,
         )
 
         buttonsToFragmentsToExistentDestinations.forEach { item ->
@@ -212,31 +212,6 @@ class Tests {
 
             onView(withId(frag))
                 .check(matches(isDisplayed()))
-        }
-    }
-
-    private fun testNavToAndFromAbout(back: () -> Unit) {
-        val fragments = mapOf(
-            R.id.fragment1 to R.id.bnToSecond,
-            R.id.fragment2 to R.id.bnToThird,
-            R.id.fragment3 to null
-        )
-
-        fragments.forEach { (frag, bn) ->
-            openAbout()
-
-            onView(withId(R.id.activity_about))
-                .check(matches(isDisplayed()))
-
-            back()
-
-            onView(withId(frag))
-                .check(matches(isDisplayed()))
-
-            bn?.let { bnNotNull ->
-                onView(withId(bnNotNull))
-                    .perform(click())
-            }
         }
     }
 }
