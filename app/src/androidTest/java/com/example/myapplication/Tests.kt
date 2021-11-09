@@ -85,7 +85,7 @@ class Tests {
         buttonsToFragmentsToBackStackSize: List<Pair<Pair<Int?, Int>, Int>>,
         nextNavAction: (bn: Int?, frag: Int) -> Unit
     ) {
-        for (i in 1..buttonsToFragmentsToBackStackSize.lastIndex) {
+        for (i in 1..buttonsToFragmentsToBackStackSize.size) {
             val scenario = launchActivity<MainActivity>()
             val list = buttonsToFragmentsToBackStackSize.subList(0, i)
             var frag = R.id.fragment1
