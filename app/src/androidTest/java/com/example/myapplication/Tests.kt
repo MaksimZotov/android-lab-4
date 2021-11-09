@@ -1,217 +1,116 @@
 package com.example.myapplication
 
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.pressBack
+import androidx.lifecycle.Lifecycle.State.DESTROYED
+import androidx.test.core.app.launchActivity
+import androidx.test.espresso.Espresso.*
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Rule
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 
-
 @RunWith(AndroidJUnit4::class)
 class Tests {
+    /**
+     * <Кнопка> to <Следующий фрагмент> to <Следующий размер backStack>
+     */
+    private val navListOnlyButtons = listOf(
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        R.id.bnToThird to R.id.fragment3 to 3,
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        R.id.bnToFirst to R.id.fragment1 to 1,
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        R.id.bnToThird to R.id.fragment3 to 3,
+        R.id.bnToFirst to R.id.fragment1 to 1
+    )
 
-    @get:Rule
-    val rule = ActivityScenarioRule(MainActivity::class.java)
+    /**
+     * <Кнопка / null - шаг назад> to <Следующий фрагмент> to <Следующий размер backStack>
+     */
+    private val navListNotOnlyButtons = listOf(
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        null to R.id.fragment1 to 1,
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        R.id.bnToThird to R.id.fragment3 to 3,
+        null to R.id.fragment2 to 2,
+        null to R.id.fragment1 to 1
+    )
 
-    @Test
-    fun testNavFragmentsJustByButtons() = testNavFragments(listOf(
-        R.id.bnToSecond to R.id.fragment2 to listOf(
-            R.id.fragment1,
-            R.id.fragment2
-        ),
-        R.id.bnToThird to R.id.fragment3 to listOf(
-            R.id.fragment1,
-            R.id.fragment2,
-            R.id.fragment3
-        ),
-        R.id.bnToSecond to R.id.fragment2 to listOf(
-            R.id.fragment1,
-            R.id.fragment2
-        ),
-        R.id.bnToFirst to R.id.fragment1 to listOf(
-            R.id.fragment1,
-        ),
-        R.id.bnToSecond to R.id.fragment2 to listOf(
-            R.id.fragment1,
-            R.id.fragment2
-        ),
-        R.id.bnToThird to R.id.fragment3 to listOf(
-            R.id.fragment1,
-            R.id.fragment2,
-            R.id.fragment3
-        ),
-        R.id.bnToFirst to R.id.fragment1 to listOf(
-            R.id.fragment1,
-        )
-    ))
-
-    @Test
-    fun testNavFragmentsWithPressBack() = testNavFragmentsWithBackNavigationNotByButtons {
-        pressBack()
-    }
+    /**
+     * <Кнопка> to
+     * <Следующий фрагмент> to
+     * <Размер backStack после того, как мы перешли из <Следующий фрагмент> в About и обратно>
+     */
+    private val navListAbout = listOf(
+        R.id.bnToSecond to R.id.fragment2 to 2,
+        R.id.bnToThird to R.id.fragment3 to 3
+    )
 
     @Test
-    fun testNavFragmentsWithNavigateUp() = testNavFragmentsWithBackNavigationNotByButtons {
-        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
-            .perform(click())
-    }
+    fun testNavFragmentsWithButtons() = testNavFragments(navListOnlyButtons)
 
     @Test
-    fun testNavToAndFromAboutWithPressBack() = testNavToAndFromAbout {
-        pressBack()
-    }
+    fun testNavFragmentsWithPressBack() = testNavFragments(navListNotOnlyButtons) { pressBack() }
 
     @Test
-    fun testNavToAndFromAboutWithNavigateUp() = testNavToAndFromAbout {
-        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
-            .perform(click())
-    }
+    fun testNavFragmentsWithNavigateUp() = testNavFragments(navListNotOnlyButtons) { navigateUp() }
 
     @Test
-    fun testConfigChanges() {
-        onView(withId(R.id.bnToSecond))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_second)))
+    fun testNavToAndFromAboutWithPressBack() = testNavToAndFromAbout(navListAbout) { pressBack() }
 
-        rule.scenario.onActivity { activity ->
-            activity.recreate()
-        }
-
-        onView(withId(R.id.bnToSecond))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_second)))
-
-        onView(withId(R.id.bnToSecond))
-            .perform(click())
-
-        onView(withId(R.id.bnToFirst))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_first)))
-        onView(withId(R.id.bnToThird))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_third)))
-
-        rule.scenario.onActivity { activity ->
-            activity.recreate()
-        }
-
-        onView(withId(R.id.bnToFirst))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_first)))
-        onView(withId(R.id.bnToThird))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_third)))
-
-        onView(withId(R.id.bnToThird))
-            .perform(click())
-
-        onView(withId(R.id.bnToFirst))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_first)))
-        onView(withId(R.id.bnToSecond))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_second)))
-
-        rule.scenario.onActivity { activity ->
-            activity.recreate()
-        }
-
-        onView(withId(R.id.bnToFirst))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_first)))
-        onView(withId(R.id.bnToSecond))
-            .check(matches(isDisplayed()))
-            .check(matches(withText(R.string.title_to_second)))
-    }
-
-    private fun testNavFragmentsWithBackNavigationNotByButtons(back: () -> Unit) =
-        testNavFragments(
-            listOf(
-                R.id.bnToSecond to R.id.fragment2 to listOf(
-                    R.id.fragment1,
-                    R.id.fragment2
-                ),
-                null to R.id.fragment1 to listOf(
-                    R.id.fragment1,
-                ),
-                R.id.bnToSecond to R.id.fragment2 to listOf(
-                    R.id.fragment1,
-                    R.id.fragment2
-                ),
-                R.id.bnToThird to R.id.fragment3 to listOf(
-                    R.id.fragment1,
-                    R.id.fragment2,
-                    R.id.fragment3
-                ),
-                null to R.id.fragment2 to listOf(
-                    R.id.fragment1,
-                    R.id.fragment2
-                ),
-                null to R.id.fragment1 to listOf(
-                    R.id.fragment1
-                )
-            ),
-            back
-        )
-
-    private fun testNavToAndFromAbout(back: () -> Unit) {
-        val fragments = mapOf(
-            R.id.fragment1 to R.id.bnToSecond,
-            R.id.fragment2 to R.id.bnToThird,
-            R.id.fragment3 to null
-        )
-
-        fragments.forEach { (frag, bn) ->
-            openAbout()
-            onView(withId(R.id.activity_about))
-                .check(matches(isDisplayed()))
-            back()
-            onView(withId(frag))
-                .check(matches(isDisplayed()))
-            bn?.let { bnNotNull ->
-                onView(withId(bnNotNull))
-                    .perform(click())
-            }
-        }
-    }
+    @Test
+    fun testNavToAndFromAboutWithNavigateUp() = testNavToAndFromAbout(navListAbout) { navigateUp() }
 
     private fun testNavFragments(
-        buttonsToFragmentsToExistentDestinations: List<Pair<Pair<Int?, Int>, List<Int>>>,
+        buttonsToFragmentsToBackStackSize: List<Pair<Pair<Int?, Int>, Int>>,
         back: () -> Unit = { }
+    ) = testNav(buttonsToFragmentsToBackStackSize) { bn, frag ->
+        bn?.let { onView(withId(bn)).perform(click()) } ?: run { back() }
+        onView(withId(frag)).check(matches(isDisplayed()))
+    }
+
+    private fun testNavToAndFromAbout(
+        buttonsToFragmentsToBackStackSize: List<Pair<Pair<Int?, Int>, Int>>,
+        back: () -> Unit
+    ) = testNav(buttonsToFragmentsToBackStackSize) { bn, frag ->
+        bn?.let { onView(withId(bn)).perform(click()) }
+        onView(withId(frag)).check(matches(isDisplayed()))
+        openAbout()
+        back()
+    }
+
+    private fun testNav(
+        buttonsToFragmentsToBackStackSize: List<Pair<Pair<Int?, Int>, Int>>,
+        nextNavAction: (bn: Int?, frag: Int) -> Unit
     ) {
-        val destinations = listOf(
-            R.id.fragment1,
-            R.id.fragment2,
-            R.id.fragment3,
-        )
+        for (i in 1..buttonsToFragmentsToBackStackSize.lastIndex) {
+            val scenario = launchActivity<MainActivity>()
+            val list = buttonsToFragmentsToBackStackSize.subList(0, i)
+            var frag = R.id.fragment1
 
-        buttonsToFragmentsToExistentDestinations.forEach { item ->
-            val bn = item.first.first
-            val frag = item.first.second
+            list.forEach { item ->
 
-            bn?.let { bnNotNull ->
-                onView(withId(bnNotNull))
-                    .perform(click())
-            } ?: run {
-                back()
+                // Проверка поворота экрана
+                scenario.recreate()
+                onView(withId(frag)).check(matches(isDisplayed()))
+
+                val bn = item.first.first
+                frag = item.first.second
+
+                // Навигация и проверка корректности навигации
+                nextNavAction(bn, frag)
             }
 
-            val existentDestinations = item.second
-            val notExistentDestinations = destinations - existentDestinations
-
-            notExistentDestinations.forEach { destination ->
-                onView(withId(destination))
-                    .check(doesNotExist())
-            }
-
-            onView(withId(frag))
-                .check(matches(isDisplayed()))
+            // Проверка содержимого backStack
+            val backStackSize = list.last().second
+            repeat(backStackSize) { pressBackUnconditionally() }
+            assertEquals(scenario.state, DESTROYED)
         }
     }
+
+    private fun navigateUp() =
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description))
+            .perform(click())
 }
